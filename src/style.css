@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* Drawer Transitions */
+.slide-over-enter-active,
+.slide-over-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.slide-over-enter-from,
+.slide-over-leave-to {
+  opacity: 0;
+}
+
+.slide-over-enter-active .drawer-backdrop,
+.slide-over-leave-active .drawer-backdrop {
+  transition: opacity 0.3s ease;
+}
+
+.slide-over-enter-from .drawer-backdrop,
+.slide-over-leave-to .drawer-backdrop {
+  opacity: 0;
+}
+
+.slide-over-enter-active .drawer-panel,
+.slide-over-leave-active .drawer-panel {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-over-enter-from .drawer-panel,
+.slide-over-leave-to .drawer-panel {
+  transform: translateX(100%);
+}
