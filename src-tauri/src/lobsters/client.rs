@@ -33,4 +33,15 @@ impl LobstersClient {
         let stories: Vec<LobstersStory> = resp.json().await?;
         Ok(stories)
     }
+
+    pub async fn get_story_details(&self, short_id: &str) -> Result<LobstersStory> {
+        let url = format!("https://lobste.rs/s/{}.json", short_id);
+        let resp = self.client.get(&url).send().await?;
+        if !resp.status().is_success() {
+            return Err(anyhow::anyhow!("Lobsters API Error: {}", resp.status()));
+        }
+
+        let story: LobstersStory = resp.json().await?;
+        Ok(story)
+    }
 }

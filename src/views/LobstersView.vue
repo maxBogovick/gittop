@@ -20,18 +20,28 @@
     <div v-else class="mt-6">
       <LobstersTable :stories="store.stories" @select="handleSelect" />
     </div>
+
+    <LobstersDrawer v-model="isDrawerOpen" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useLobstersStore } from '../stores/lobsters';
 import ViewHeader from '../components/ViewHeader.vue';
 import LobstersTable from '../components/LobstersTable.vue';
+import LobstersDrawer from '../components/LobstersDrawer.vue';
 import LoadingSkeleton from '../components/LoadingSkeleton.vue';
-import { openUrl } from '@tauri-apps/plugin-opener';
+import { type LobstersStory } from '../services/tauriApi';
 
 const store = useLobstersStore();
-const handleSelect = async (story: any) => await openUrl(story.url);
+const isDrawerOpen = ref(false);
+
+const handleSelect = async (story: LobstersStory) => {
+    store.selectedStory = story;
+    store.loadStoryDetails(story.short_id);
+    isDrawerOpen.value = true;
+};
+
 onMounted(() => { if (!store.stories.length) store.loadStories(); });
 </script>

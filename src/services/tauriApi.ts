@@ -265,6 +265,17 @@ export async function getProductHuntPosts(): Promise<ProductHuntPost[]> {
     return await invoke('get_producthunt_posts');
 }
 
+export interface LobstersComment {
+    short_id: string;
+    created_at: string;
+    comment: string;
+    comment_plain: string;
+    depth: number;
+    commenting_user: string;
+    score: number;
+    parent_comment: string | null;
+}
+
 export interface LobstersStory {
     short_id: string;
     title: string;
@@ -274,10 +285,16 @@ export interface LobstersStory {
     tags: string[];
     created_at: string;
     comments_url: string;
+    submitter_user: string;
+    comments?: LobstersComment[];
 }
 
 export async function getLobstersStories(storyType?: string): Promise<LobstersStory[]> {
     return await invoke('get_lobsters_stories', { storyType });
+}
+
+export async function getLobstersStoryDetails(shortId: string): Promise<LobstersStory> {
+    return await invoke('get_lobsters_story_details', { shortId });
 }
 
 export interface Crate {

@@ -25,7 +25,7 @@ use commands::hackernews::{get_hackernews_stories, search_hackernews};
 use commands::medium::get_medium_articles;
 use commands::hashnode::get_hashnode_posts;
 use commands::producthunt::get_producthunt_posts;
-use commands::lobsters::get_lobsters_stories;
+use commands::lobsters::{get_lobsters_stories, get_lobsters_story_details};
 use commands::crates::get_crates;
 use commands::indiehackers::get_indiehackers_posts;
 use std::sync::Mutex;
@@ -91,6 +91,7 @@ pub fn run() {
             get_hashnode_posts,
             get_producthunt_posts,
             get_lobsters_stories,
+            get_lobsters_story_details,
             get_crates,
             get_indiehackers_posts
         ])
