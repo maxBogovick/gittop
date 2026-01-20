@@ -23,6 +23,75 @@ pub async fn init_pool() -> Result<PgPool> {
     sqlx::query("DROP TABLE IF EXISTS repositories").execute(&pool).await?;
     sqlx::query("DROP TABLE IF EXISTS reddit_posts").execute(&pool).await?;
     sqlx::query("DROP TABLE IF EXISTS etsy_listings").execute(&pool).await?;
+    // We intentionally don't drop search cache tables to persist them, or do we? 
+    // For now, let's keep them persistent.
+
+    // Enable pg_trgm for fuzzy search
+    sqlx::query("CREATE EXTENSION IF NOT EXISTS pg_trgm").execute(&pool).await?;
+
+    // Create Search Tables
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS search_requests (
+            id SERIAL PRIMARY KEY,
+            query_hash TEXT NOT NULL UNIQUE,
+            query_text TEXT NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )"
+    )
+    .execute(&pool)
+    .await?;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS search_results (
+            id SERIAL PRIMARY KEY,
+            request_id INTEGER NOT NULL REFERENCES search_requests(id) ON DELETE CASCADE,
+            source TEXT NOT NULL,
+            category TEXT NOT NULL,
+            external_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
+            url TEXT NOT NULL,
+            author TEXT,
+            points BIGINT,
+            comment_count BIGINT,
+            created_at TEXT,
+            tags TEXT[],
+            tsv TSVECTOR
+        )"
+    )
+    .execute(&pool)
+    .await?;
+
+    // Function to update tsv
+    sqlx::query(
+        "CREATE OR REPLACE FUNCTION search_results_tsv_update() RETURNS trigger AS $$
+        BEGIN
+            NEW.tsv :=
+                setweight(to_tsvector('english', coalesce(NEW.title, '')), 'A') ||
+                setweight(to_tsvector('english', coalesce(NEW.description, '')), 'B') ||
+                setweight(to_tsvector('english', array_to_string(NEW.tags, ' ')), 'C');
+            RETURN NEW;
+        END
+        $$ LANGUAGE plpgsql"
+    )
+    .execute(&pool)
+    .await?;
+
+    // Trigger
+    sqlx::query(
+        "DROP TRIGGER IF EXISTS tsvectorupdate ON search_results"
+    ).execute(&pool).await?;
+
+    sqlx::query(
+        "CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+        ON search_results FOR EACH ROW EXECUTE FUNCTION search_results_tsv_update()"
+    )
+    .execute(&pool)
+    .await?;
+
+    // Indexes
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_search_results_tsv ON search_results USING GIN(tsv)").execute(&pool).await?;
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_search_results_title_trgm ON search_results USING GIN(title gin_trgm_ops)").execute(&pool).await?;
 
     // Create table if not exists
     sqlx::query(

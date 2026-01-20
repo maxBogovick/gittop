@@ -13,6 +13,7 @@ use crate::hashnode::client::HashnodeClient;
 use crate::producthunt::client::ProductHuntClient;
 use crate::lobsters::client::LobstersClient;
 use crate::indiehackers::client::IndieHackersClient;
+use crate::cache::search::{get_cached_results, save_search_results};
 use chrono::{Utc, TimeZone, Duration};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -40,7 +41,24 @@ pub async fn search_all(
     state: State<'_, AppState>
 ) -> Result<Vec<UnifiedSearchResult>, String> {
     let page = page.unwrap_or(1);
-    println!("Global Search: '{}' Sources: {:?} Time: {:?} Sort: {:?} Page: {}", query, sources, time_filter, sort_by, page);
+    
+    // 1. Cache Key
+    let sources_key = sources.clone().map(|mut s| { s.sort(); s.join(",") }).unwrap_or_default();
+    let query_hash = format!(
+        "q={}|s={}|t={}|so={}|p={}", 
+        query.trim(), 
+        sources_key, 
+        time_filter.as_deref().unwrap_or("all"), 
+        sort_by.as_deref().unwrap_or("relevance"), 
+        page
+    );
+    
+    // 2. Check Cache
+    if let Ok(Some(cached)) = get_cached_results(&state.pool, &query_hash).await {
+        return Ok(cached);
+    }
+
+    println!("Global Search (Network): '{}' Sources: {:?} Time: {:?} Sort: {:?} Page: {}", query, sources, time_filter, sort_by, page);
     let mut results = Vec::new();
 
     let enabled_sources: std::collections::HashSet<String> = sources
@@ -83,8 +101,6 @@ pub async fn search_all(
     
     let etsy_key = state.etsy_api_key.lock().unwrap().clone();
     let etsy_client = if is_enabled("Etsy") { 
-         // Verify we have a key or env var? Client builder usually handles it but we passed it in constructor in our implementation?
-         // In `etsy/client.rs`: `pub fn new(_api_key: String)`. It ignores it but takes it.
          Some(EtsyClient::new(etsy_key)) 
     } else { None };
 
@@ -443,6 +459,11 @@ pub async fn search_all(
     results.extend(r_ph.unwrap_or_default());
     results.extend(r_lob.unwrap_or_default());
     results.extend(r_indie.unwrap_or_default());
+
+    // 3. Save Cache
+    if let Err(e) = save_search_results(&state.pool, &query_hash, &query, &results).await {
+        eprintln!("Failed to save search cache: {}", e);
+    }
 
     Ok(results)
 }
