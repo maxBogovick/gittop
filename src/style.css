@@ -1,6 +1,70 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+/* Enable class-based dark mode (required for Tailwind v4) */
+@variant dark (&:where(.dark, .dark *));
+
+/* CSS Variables for theming */
+:root {
+  /* Background colors */
+  --color-bg-primary: theme('colors.slate.50');
+  --color-bg-secondary: theme('colors.white');
+  --color-bg-tertiary: theme('colors.slate.100');
+  --color-bg-hover: theme('colors.slate.100');
+  --color-bg-active: theme('colors.slate.200');
+
+  /* Border colors */
+  --color-border-primary: theme('colors.slate.200');
+  --color-border-secondary: theme('colors.slate.100');
+
+  /* Text colors */
+  --color-text-primary: theme('colors.slate.900');
+  --color-text-secondary: theme('colors.slate.600');
+  --color-text-tertiary: theme('colors.slate.500');
+  --color-text-muted: theme('colors.slate.400');
+
+  /* Accent colors */
+  --color-accent-primary: theme('colors.blue.600');
+  --color-accent-hover: theme('colors.blue.700');
+  --color-accent-bg: theme('colors.blue.50');
+
+  /* Sidebar dimensions */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.dark {
+  /* Background colors */
+  --color-bg-primary: theme('colors.slate.950');
+  --color-bg-secondary: theme('colors.slate.900');
+  --color-bg-tertiary: theme('colors.slate.800');
+  --color-bg-hover: theme('colors.slate.800');
+  --color-bg-active: theme('colors.slate.700');
+
+  /* Border colors */
+  --color-border-primary: theme('colors.slate.700');
+  --color-border-secondary: theme('colors.slate.800');
+
+  /* Text colors */
+  --color-text-primary: theme('colors.slate.100');
+  --color-text-secondary: theme('colors.slate.300');
+  --color-text-tertiary: theme('colors.slate.400');
+  --color-text-muted: theme('colors.slate.500');
+
+  /* Accent colors */
+  --color-accent-primary: theme('colors.blue.500');
+  --color-accent-hover: theme('colors.blue.400');
+  --color-accent-bg: theme('colors.blue.950');
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+}
+
 /* Drawer Transitions */
 .slide-over-enter-active,
 .slide-over-leave-active {
@@ -30,4 +94,76 @@
 .slide-over-enter-from .drawer-panel,
 .slide-over-leave-to .drawer-panel {
   transform: translateX(100%);
+}
+
+/* Mobile sidebar transitions */
+.mobile-sidebar-enter-active,
+.mobile-sidebar-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.mobile-sidebar-enter-from,
+.mobile-sidebar-leave-to {
+  opacity: 0;
+}
+
+.mobile-sidebar-enter-active .mobile-sidebar-panel,
+.mobile-sidebar-leave-active .mobile-sidebar-panel {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-sidebar-enter-from .mobile-sidebar-panel,
+.mobile-sidebar-leave-to .mobile-sidebar-panel {
+  transform: translateX(-100%);
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-primary);
+  border-radius: 20px;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fade in up animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
 }

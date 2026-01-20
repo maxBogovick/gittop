@@ -15,15 +15,15 @@
               @update:model-value="reload" 
               class="w-full sm:w-80" 
           />
-          <div class="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-            <select 
-                v-model="store.state" 
+          <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <select
+                v-model="store.state"
                 @change="reload"
-                class="block w-full sm:w-48 pl-3 pr-10 py-2 text-sm border-transparent focus:ring-0 sm:text-sm rounded-lg"
+                class="block w-full sm:w-48 pl-3 pr-10 py-2 text-sm bg-transparent text-slate-900 dark:text-white border-transparent focus:ring-0 sm:text-sm rounded-lg cursor-pointer"
             >
-                <option value="fresh">Fresh</option>
-                <option value="rising">Rising</option>
-                <option value="all">All</option>
+                <option value="fresh" class="bg-white dark:bg-slate-800">Fresh</option>
+                <option value="rising" class="bg-white dark:bg-slate-800">Rising</option>
+                <option value="all" class="bg-white dark:bg-slate-800">All</option>
             </select>
           </div>
         </div>

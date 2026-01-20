@@ -11,15 +11,8 @@ pub async fn get_etsy_top(
     offset: Option<u32>,
     state: State<'_, AppState>
 ) -> Result<Vec<EtsyListing>, String> {
+    // We no longer require an API key, but we pass a dummy or existing one to the client constructor
     let api_key = state.etsy_api_key.lock().unwrap().clone();
-    if api_key.is_empty() {
-        if let Ok(env_key) = std::env::var("ETSY_API_KEY") {
-             let client = EtsyClient::new(env_key);
-             return fetch_listings(client, None, "score", "desc", limit, offset, &state.pool).await;
-        }
-        return Err("Etsy API Key not set. Please set ETSY_API_KEY environment variable.".to_string());
-    }
-
     let client = EtsyClient::new(api_key);
     fetch_listings(client, None, "score", "desc", limit, offset, &state.pool).await
 }
@@ -31,15 +24,8 @@ pub async fn get_etsy_new(
     state: State<'_, AppState>
 ) -> Result<Vec<EtsyListing>, String> {
     let api_key = state.etsy_api_key.lock().unwrap().clone();
-    if api_key.is_empty() {
-        if let Ok(env_key) = std::env::var("ETSY_API_KEY") {
-             let client = EtsyClient::new(env_key);
-             return fetch_listings(client, None, "created", "desc", limit, offset, &state.pool).await;
-        }
-        return Err("Etsy API Key not set.".to_string());
-    }
-
     let client = EtsyClient::new(api_key);
+    // Map "new" to Etsy's "date_desc" logic in client
     fetch_listings(client, None, "created", "desc", limit, offset, &state.pool).await
 }
 
@@ -51,14 +37,6 @@ pub async fn search_etsy(
     state: State<'_, AppState>
 ) -> Result<Vec<EtsyListing>, String> {
     let api_key = state.etsy_api_key.lock().unwrap().clone();
-    if api_key.is_empty() {
-        if let Ok(env_key) = std::env::var("ETSY_API_KEY") {
-             let client = EtsyClient::new(env_key);
-             return fetch_listings(client, Some(&query), "score", "desc", limit, offset, &state.pool).await;
-        }
-        return Err("Etsy API Key not set.".to_string());
-    }
-
     let client = EtsyClient::new(api_key);
     fetch_listings(client, Some(&query), "score", "desc", limit, offset, &state.pool).await
 }

@@ -28,6 +28,7 @@ use commands::producthunt::get_producthunt_posts;
 use commands::lobsters::{get_lobsters_stories, get_lobsters_story_details};
 use commands::crates::get_crates;
 use commands::indiehackers::get_indiehackers_posts;
+use commands::search::search_all;
 use std::sync::Mutex;
 use tauri::Manager;
 use dotenv::dotenv;
@@ -93,7 +94,8 @@ pub fn run() {
             get_lobsters_stories,
             get_lobsters_story_details,
             get_crates,
-            get_indiehackers_posts
+            get_indiehackers_posts,
+            search_all
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

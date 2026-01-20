@@ -74,4 +74,22 @@ impl DevtoClient {
         let article: DevtoArticle = resp.json().await?;
         Ok(article)
     }
+
+    pub async fn search(
+        &self,
+        query: &str,
+        page: u32,
+        per_page: u32,
+    ) -> Result<Vec<DevtoArticle>> {
+        // Dev.to API doesn't have a full text search endpoint exposed clearly.
+        // We will treat the query as a tag for now.
+        // Remove spaces and special chars to make it a valid tag? 
+        // Or just pass it as is and let the API decide.
+        // If query has spaces, it's likely not a tag. 
+        if query.contains(' ') {
+            return Ok(vec![]); // Skip complex queries for now to avoid bad results
+        }
+
+        self.get_articles(Some(query), None, None, page, per_page).await
+    }
 }

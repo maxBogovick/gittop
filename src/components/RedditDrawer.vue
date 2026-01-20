@@ -1,20 +1,20 @@
 <template>
   <div class="fixed inset-0 z-50 flex justify-end" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
     <!-- Backdrop -->
-    <div class="drawer-backdrop fixed inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="$emit('close')"></div>
+    <div class="drawer-backdrop fixed inset-0 bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="$emit('close')"></div>
 
     <!-- Panel -->
-    <div class="drawer-panel w-screen max-w-2xl transform transition-transform bg-white shadow-2xl flex flex-col h-full relative z-10">
-      
+    <div class="drawer-panel w-screen max-w-2xl transform transition-transform bg-[var(--color-bg-secondary)] shadow-2xl flex flex-col h-full relative z-10">
+
       <!-- Header -->
-      <div class="flex-shrink-0 px-6 py-4 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex items-start justify-between">
+      <div class="flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-primary)] bg-[var(--color-bg-secondary)]/80 backdrop-blur-md sticky top-0 z-20 flex items-start justify-between">
         <div class="min-w-0 pr-4">
-           <h2 class="text-lg font-bold text-slate-900 leading-snug" id="slide-over-title">{{ post.title }}</h2>
-           <p class="text-sm text-slate-500 mt-1">
-             <span class="font-medium text-orange-600">r/{{ post.subreddit }}</span> • Posted by u/{{ post.author }}
+           <h2 class="text-lg font-bold text-[var(--color-text-primary)] leading-snug" id="slide-over-title">{{ post.title }}</h2>
+           <p class="text-sm text-[var(--color-text-tertiary)] mt-1">
+             <span class="font-medium text-orange-600 dark:text-orange-400">r/{{ post.subreddit }}</span> • Posted by u/{{ post.author }}
            </p>
         </div>
-        <button type="button" class="rounded-full p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none flex-shrink-0" @click="$emit('close')">
+        <button type="button" class="rounded-full p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors focus:outline-none flex-shrink-0" @click="$emit('close')">
           <span class="sr-only">Close panel</span>
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -23,24 +23,24 @@
       </div>
 
       <!-- Actions -->
-      <div class="px-6 py-3 bg-slate-50 border-b border-slate-100 flex gap-2">
-         <a :href="post.permalink" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-slate-200 text-xs font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 hover:text-orange-600 transition-colors shadow-sm">
+      <div class="px-6 py-3 bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-primary)] flex gap-2">
+         <a :href="post.permalink" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-[var(--color-border-primary)] text-xs font-medium rounded-md text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-orange-600 dark:hover:text-orange-400 transition-colors shadow-sm">
             View on Reddit
          </a>
-         <a v-if="isExternalLink" :href="post.url" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-blue-200 text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors shadow-sm">
+         <a v-if="isExternalLink" :href="post.url" target="_blank" class="inline-flex items-center px-3 py-1.5 border border-[var(--color-accent-primary)]/30 text-xs font-medium rounded-md text-[var(--color-accent-primary)] bg-[var(--color-accent-bg)] hover:bg-[var(--color-accent-primary)]/20 transition-colors shadow-sm">
             Open Link ↗
          </a>
       </div>
 
       <!-- Scrollable Content -->
       <div class="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
-         <div v-if="post.selftext" class="prose prose-slate prose-sm max-w-none hover:prose-a:text-blue-600" v-html="renderMarkdown(post.selftext)"></div>
-         <div v-else-if="isImage" class="flex justify-center bg-slate-50 rounded-lg p-4">
+         <div v-if="post.selftext" class="prose prose-slate dark:prose-invert prose-sm max-w-none" v-html="renderMarkdown(post.selftext)"></div>
+         <div v-else-if="isImage" class="flex justify-center bg-[var(--color-bg-tertiary)] rounded-lg p-4">
             <img :src="decodeUrl(post.url)" referrerpolicy="no-referrer" class="max-w-full rounded shadow-sm object-contain" />
          </div>
-         <div v-else class="text-center py-12 text-slate-500 bg-slate-50 rounded-lg border border-slate-100 dashed">
+         <div v-else class="text-center py-12 text-[var(--color-text-tertiary)] bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border-primary)] dashed">
             <p class="mb-2 font-medium">This post is a link to:</p>
-            <a :href="post.url" target="_blank" class="text-blue-600 hover:underline break-all block px-4">{{ post.url }}</a>
+            <a :href="post.url" target="_blank" class="text-[var(--color-accent-primary)] hover:underline break-all block px-4">{{ post.url }}</a>
          </div>
       </div>
     </div>
@@ -91,7 +91,7 @@ function decodeUrl(url: string): string {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: var(--color-border-primary);
   border-radius: 20px;
 }
 </style>

@@ -13,17 +13,17 @@
               class="w-full sm:w-80" 
           />
           
-          <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider ml-2">Sort by:</span>
-              <select 
-                  v-model="store.sort" 
+          <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-2">Sort by:</span>
+              <select
+                  v-model="store.sort"
                   @change="reload"
-                  class="block pl-3 pr-10 py-2 text-sm border-transparent focus:ring-0 rounded-lg transition-all"
+                  class="block pl-3 pr-10 py-2 text-sm bg-transparent text-slate-900 dark:text-white border-transparent focus:ring-0 rounded-lg transition-all cursor-pointer"
               >
-                  <option value="votes">Top Rated</option>
-                  <option value="activity">Recent Activity</option>
-                  <option value="creation">Newest</option>
-                  <option value="hot">Hot</option>
+                  <option value="votes" class="bg-white dark:bg-slate-800">Top Rated</option>
+                  <option value="activity" class="bg-white dark:bg-slate-800">Recent Activity</option>
+                  <option value="creation" class="bg-white dark:bg-slate-800">Newest</option>
+                  <option value="hot" class="bg-white dark:bg-slate-800">Hot</option>
               </select>
           </div>
         </div>

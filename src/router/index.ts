@@ -8,12 +8,18 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/top'
+      name: 'dashboard',
+      component: () => import('../views/DashboardView.vue')
     },
     {
       path: '/top',
       name: 'top',
       component: TopRepositoriesView
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: () => import('../views/GlobalSearchView.vue')
     },
     {
       path: '/new',

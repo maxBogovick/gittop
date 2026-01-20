@@ -3,10 +3,10 @@
     <select
       :value="modelValue"
       @input="updateValue"
-      class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white text-gray-700 border"
+      class="block w-full pl-3 pr-10 py-2 text-sm rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors appearance-none cursor-pointer"
     >
-      <option value="">All Languages</option>
-      <option v-for="lang in languages" :key="lang" :value="lang">
+      <option value="" class="bg-white dark:bg-slate-800">All Languages</option>
+      <option v-for="lang in languages" :key="lang" :value="lang" class="bg-white dark:bg-slate-800">
         {{ lang }}
       </option>
     </select>

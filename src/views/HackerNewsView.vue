@@ -13,14 +13,14 @@
               class="w-full lg:w-72"
           />
 
-          <div v-if="!store.searchQuery" class="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+          <div v-if="!store.searchQuery" class="flex bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <button
                 v-for="type in storyTypes"
                 :key="type.value"
                 @click="store.storyType = type.value; reload()"
                 :class="[
                     'px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all',
-                    store.storyType === type.value ? 'bg-orange-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                    store.storyType === type.value ? 'bg-orange-500 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
                 ]"
             >
                 {{ type.label }}
@@ -31,22 +31,22 @@
             <select
                 v-model="store.searchSort"
                 @change="reload()"
-                class="px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                class="px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 cursor-pointer"
             >
-              <option value="popularity">By Popularity</option>
-              <option value="date">By Date</option>
+              <option value="popularity" class="bg-white dark:bg-slate-800">By Popularity</option>
+              <option value="date" class="bg-white dark:bg-slate-800">By Date</option>
             </select>
 
             <select
                 v-model="store.searchTimeRange"
                 @change="reload()"
-                class="px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                class="px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 cursor-pointer"
             >
-              <option value="">All Time</option>
-              <option value="day">Last 24h</option>
-              <option value="week">Last Week</option>
-              <option value="month">Last Month</option>
-              <option value="year">Last Year</option>
+              <option value="" class="bg-white dark:bg-slate-800">All Time</option>
+              <option value="day" class="bg-white dark:bg-slate-800">Last 24h</option>
+              <option value="week" class="bg-white dark:bg-slate-800">Last Week</option>
+              <option value="month" class="bg-white dark:bg-slate-800">Last Month</option>
+              <option value="year" class="bg-white dark:bg-slate-800">Last Year</option>
             </select>
           </div>
         </div>

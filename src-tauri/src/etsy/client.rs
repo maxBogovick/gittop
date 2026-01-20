@@ -1,66 +1,32 @@
 use reqwest::header;
-use serde::{Serialize, Deserialize};
-use anyhow::{Result, Context};
-use serde_json::Value;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EtsyListing {
-    pub listing_id: u64,
-    pub title: String,
-    pub description: Option<String>,
-    pub url: String,
-    pub price: Option<EtsyPrice>,
-    pub num_favorers: Option<u64>,
-    pub creation_tsz: Option<i64>, // epoch seconds
-    pub tags: Option<Vec<String>>,
-    // We try to capture images if available, or just the first one
-    pub images: Option<Vec<EtsyImage>>, 
-    pub shop: Option<EtsyShop>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EtsyPrice {
-    pub amount: u64,
-    pub divisor: u64,
-    pub currency_code: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EtsyImage {
-    pub url_75x75: Option<String>,
-    pub url_170x135: Option<String>,
-    #[serde(rename = "url_570xN")]
-    pub url_570x_n: Option<String>,
-    pub url_fullxfull: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EtsyShop {
-    pub shop_id: u64,
-    pub shop_name: String,
-}
+use scraper::{Html, Selector};
+use anyhow::Result;
+use crate::etsy::{EtsyListing, EtsyPrice, EtsyImage, EtsyShop};
+use regex::Regex;
 
 pub struct EtsyClient {
     client: reqwest::Client,
 }
 
 impl EtsyClient {
-    pub fn new(api_key: String) -> Self {
+    pub fn new(_api_key: String) -> Self {
         let mut headers = header::HeaderMap::new();
-        if let Ok(val) = header::HeaderValue::from_str(&api_key) {
-            headers.insert("x-api-key", val);
-        }
+        headers.insert(
+            header::USER_AGENT, 
+            header::HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        );
+        headers.insert(header::ACCEPT, header::HeaderValue::from_static("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"));
+        headers.insert(header::ACCEPT_LANGUAGE, header::HeaderValue::from_static("en-US,en;q=0.9"));
         
         let client = reqwest::Client::builder()
             .default_headers(headers)
+            .cookie_store(true) 
             .build()
             .unwrap_or_default();
 
         Self { client }
     }
 
-    /// Fetch active listings with optional keyword search and sorting.
-    /// This uses the Open API v3 endpoint for active listings.
     pub async fn get_listings(
         &self, 
         keywords: Option<&str>, 
@@ -69,96 +35,116 @@ impl EtsyClient {
         limit: u32, 
         offset: u32
     ) -> Result<Vec<EtsyListing>> {
-        let url = "https://openapi.etsy.com/v3/application/listings/active";
+        let base_url = "https://www.etsy.com/search";
+        let page = (offset / limit) + 1;
         
-        let mut req = self.client.get(url)
-            .query(&[("limit", limit.to_string()), ("offset", offset.to_string())]);
+        // Map sort params to Etsy's "order" param
+        // Etsy supports: most_relevant, date_desc, price_asc, price_desc
+        let order = match (sort_on, sort_order) {
+            (Some("created"), Some("desc")) => "date_desc",
+            (Some("price"), Some("asc")) => "price_asc",
+            (Some("price"), Some("desc")) => "price_desc",
+            _ => "most_relevant",
+        };
 
-        if let Some(k) = keywords {
-            if !k.is_empty() {
-                req = req.query(&[("keywords", k)]);
-            }
-        }
+        let query = keywords.unwrap_or("handmade"); // Default to broad search if empty
 
-        if let Some(s) = sort_on {
-            req = req.query(&[("sort_on", s)]);
-        }
+        let url = format!("{}?q={}&order={}&ref=pagination&page={}", base_url, query, order, page);
+        println!("Fetching Etsy URL: {}", url);
+
+        let resp = self.client.get(&url).send().await?;
         
-        if let Some(o) = sort_order {
-            req = req.query(&[("sort_order", o)]);
-        }
-
-        // Attempt to request includes if supported by the specific endpoint variant or proxy
-        req = req.query(&[("includes", "Images,Shop")]);
-
-        let resp = req.send().await?;
-
         if !resp.status().is_success() {
-             return Err(anyhow::anyhow!("Etsy API Error: {}", resp.status()));
+             return Err(anyhow::anyhow!("Etsy Scraper Error: {} - Access Denied (Likely Bot Protection)", resp.status()));
         }
 
-        let json: Value = resp.json().await?;
-        let results = json["results"].as_array().context("No results found in Etsy response")?;
+        let html_content = resp.text().await?;
+        let document = Html::parse_document(&html_content);
+
+        // Selectors
+        // Note: These classes are subject to change.
+        // We look for the main listing card anchor
+        let listing_selector = Selector::parse("a.listing-link").unwrap();
+        let title_selector = Selector::parse("h3").unwrap();
+        let price_selector = Selector::parse(".currency-value").unwrap();
+        let currency_selector = Selector::parse(".currency-symbol").unwrap();
+        // let shop_selector = Selector::parse(".wt-text-caption").unwrap(); // Often shop name is in caption
+        let img_selector = Selector::parse("img.wt-width-full").unwrap();
 
         let mut listings = Vec::new();
-        for item in results {
-            // Parse basic fields
-            let listing_id = item["listing_id"].as_u64().unwrap_or_default();
-            let title = item["title"].as_str().unwrap_or_default().to_string();
-            let description = item["description"].as_str().map(|s| s.to_string());
-            let url = item["url"].as_str().unwrap_or_default().to_string();
+
+        for element in document.select(&listing_selector) {
+            let url = element.value().attr("href").unwrap_or_default().to_string();
             
-            // Parse price
-            let price = if let Some(p) = item.get("price") {
-                Some(EtsyPrice {
-                    amount: p["amount"].as_u64().unwrap_or_default(),
-                    divisor: p["divisor"].as_u64().unwrap_or(100),
-                    currency_code: p["currency_code"].as_str().unwrap_or("USD").to_string(),
-                })
+            // Extract Listing ID from URL
+            // URL format: .../listing/123456789/title...
+            let re = Regex::new(r"/listing/(\d+)").unwrap();
+            let listing_id = re.captures(&url)
+                .and_then(|cap| cap.get(1))
+                .map(|m| m.as_str().parse::<u64>().unwrap_or_default())
+                .unwrap_or_default();
+
+            if listing_id == 0 { continue; }
+
+            let title = element.select(&title_selector).next()
+                .map(|e| e.text().collect::<String>().trim().to_string())
+                .unwrap_or_else(|| "Untitled".to_string());
+
+            // Price extraction is tricky as it's often split
+            let price_amount_str = element.select(&price_selector).next()
+                .map(|e| e.text().collect::<String>().replace(",", ""))
+                .unwrap_or_default();
+            
+            let price_amount = price_amount_str.parse::<f64>().unwrap_or(0.0);
+            
+            let currency = element.select(&currency_selector).next()
+                .map(|e| e.text().collect::<String>().trim().to_string())
+                .unwrap_or_else(|| "$".to_string());
+            
+            let price = Some(EtsyPrice {
+                amount: (price_amount * 100.0) as u64,
+                divisor: 100,
+                currency_code: currency, // Simplified
+            });
+
+            // Image
+            let img_src = element.select(&img_selector).next()
+                .and_then(|e| e.value().attr("src").or(e.value().attr("data-src")))
+                .map(|s| s.to_string());
+
+            let images = if let Some(src) = img_src {
+                Some(vec![EtsyImage {
+                    url_75x75: Some(src.clone()),
+                    url_170x135: Some(src.clone()),
+                    url_570x_n: Some(src.clone()),
+                    url_fullxfull: Some(src),
+                }])
             } else {
                 None
             };
-
-            let num_favorers = item["num_favorers"].as_u64();
-            let creation_tsz = item["creation_tsz"].as_i64(); // v3 might use created_timestamp? Checking both
-            let created = if creation_tsz.unwrap_or(0) > 0 { creation_tsz } else { item["created_timestamp"].as_i64() };
-
-            let tags = item["tags"].as_array().map(|arr| {
-                arr.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect()
-            });
-
-            // Parse Images
-            let images = item["images"].as_array().map(|arr| {
-                arr.iter().map(|img| EtsyImage {
-                    url_75x75: img["url_75x75"].as_str().map(|s| s.to_string()),
-                    url_170x135: img["url_170x135"].as_str().map(|s| s.to_string()),
-                    url_570x_n: img["url_570xN"].as_str().map(|s| s.to_string()),
-                    url_fullxfull: img["url_fullxfull"].as_str().map(|s| s.to_string()),
-                }).collect()
-            });
-
-            // Parse Shop
-            let shop = if let Some(s) = item.get("shop") {
-                Some(EtsyShop {
-                    shop_id: s["shop_id"].as_u64().unwrap_or_default(),
-                    shop_name: s["shop_name"].as_str().unwrap_or("Unknown").to_string(),
-                })
-            } else {
-                None
-            };
+            
+            // Shop Name - highly heuristic
+            // Often in a span with class "wt-text-gray" or similar inside the card
+            // We verify by checking if it's not the title
+            let shop_name = "Etsy Shop".to_string(); // Placeholder or complex parsing required
 
             listings.push(EtsyListing {
                 listing_id,
                 title,
-                description,
+                description: None,
                 url,
                 price,
-                num_favorers,
-                creation_tsz: created,
-                tags,
+                num_favorers: None,
+                creation_tsz: None, // Hard to scrape from list view
+                tags: None,
                 images,
-                shop,
+                shop: Some(EtsyShop { shop_id: 0, shop_name }),
             });
+        }
+
+        // Fallback for when no listings found - maybe parsing failed or layout changed
+        if listings.is_empty() {
+             println!("No listings parsed. HTML preview: {:.500}", html_content);
         }
 
         Ok(listings)

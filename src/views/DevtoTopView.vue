@@ -15,17 +15,17 @@
               @update:model-value="reload" 
               class="w-full sm:w-80" 
           />
-          <div class="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-            <select 
-                v-model="store.top" 
+          <div class="flex items-center gap-3 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <select
+                v-model="store.top"
                 @change="reload"
-                class="block w-full sm:w-48 pl-3 pr-10 py-2 text-sm border-transparent focus:ring-0 sm:text-sm rounded-lg"
+                class="block w-full sm:w-48 pl-3 pr-10 py-2 text-sm bg-transparent text-slate-900 dark:text-white border-transparent focus:ring-0 sm:text-sm rounded-lg cursor-pointer"
             >
-                <option :value="1">Top today</option>
-                <option :value="7">Top this week</option>
-                <option :value="30">Top this month</option>
-                <option :value="365">Top this year</option>
-                <option :value="null">All time</option>
+                <option :value="1" class="bg-white dark:bg-slate-800">Top today</option>
+                <option :value="7" class="bg-white dark:bg-slate-800">Top this week</option>
+                <option :value="30" class="bg-white dark:bg-slate-800">Top this month</option>
+                <option :value="365" class="bg-white dark:bg-slate-800">Top this year</option>
+                <option :value="null" class="bg-white dark:bg-slate-800">All time</option>
             </select>
           </div>
         </div>

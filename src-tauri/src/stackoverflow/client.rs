@@ -62,4 +62,36 @@ impl StackOverflowClient {
         let response: StackOverflowResponse = resp.json().await?;
         Ok(response.items)
     }
+
+    pub async fn search(
+        &self,
+        query: &str,
+        sort: &str, // activity, votes, creation, relevance
+        page: u32,
+        per_page: u32,
+    ) -> Result<Vec<StackOverflowQuestion>> {
+        let url = "https://api.stackexchange.com/2.3/search/advanced";
+        
+        let mut params = Vec::new();
+        params.push(("site", "stackoverflow".to_string()));
+        params.push(("page", page.to_string()));
+        params.push(("pagesize", per_page.to_string()));
+        params.push(("order", "desc".to_string()));
+        params.push(("sort", sort.to_string()));
+        params.push(("q", query.to_string()));
+        // filter=!9_bDDxJY5 gets body.
+        params.push(("filter", "!9_bDDxJY5".to_string())); 
+
+        let resp = self.client.get(url)
+            .query(&params)
+            .send()
+            .await?;
+
+        if !resp.status().is_success() {
+            return Err(anyhow::anyhow!("StackOverflow API Error: {}", resp.status()));
+        }
+
+        let response: StackOverflowResponse = resp.json().await?;
+        Ok(response.items)
+    }
 }

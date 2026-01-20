@@ -324,3 +324,34 @@ export interface IndieHackersPost {
 export async function getIndieHackersPosts(): Promise<IndieHackersPost[]> {
     return await invoke('get_indiehackers_posts');
 }
+
+export interface UnifiedSearchResult {
+    source: string; 
+    category: string; // "Code", "Discussion", "Article", "Product"
+    id: string;
+    title: string;
+    url: string;
+    description?: string;
+    author?: string;
+    points?: number;
+    comment_count?: number;
+    created_at?: string;
+    tags: string[];
+}
+
+export async function searchAll(
+    query: string, 
+    sources?: string[], 
+    timeFilter?: string, 
+    sortBy?: string,
+    page?: number
+): Promise<UnifiedSearchResult[]> {
+    return await invoke('search_all', { 
+        query, 
+        sources, 
+        time_filter: timeFilter,
+        sort_by: sortBy,
+        page
+    });
+}
+

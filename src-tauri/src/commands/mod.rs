@@ -11,3 +11,4 @@ pub mod producthunt;
 pub mod lobsters;
 pub mod crates;
 pub mod indiehackers;
+pub mod search;

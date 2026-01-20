@@ -1,36 +1,36 @@
 <template>
-  <div class="overflow-x-auto bg-white shadow rounded-lg">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
+  <div class="overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-md shadow-lg border border-slate-200/50 dark:border-slate-700/50 rounded-2xl">
+    <table class="min-w-full divide-y divide-slate-200/50 dark:divide-slate-700/50">
+      <thead class="bg-slate-50/50 dark:bg-slate-800/50">
         <tr>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Article</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
-          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Reactions</th>
-          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Comments</th>
-          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Reading Time</th>
-          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Published</th>
+          <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Article</th>
+          <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tags</th>
+          <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Reactions</th>
+          <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Comments</th>
+          <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Reading Time</th>
+          <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Published</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr 
-          v-for="article in articles" 
-          :key="article.id" 
-          class="hover:bg-gray-50 transition-colors cursor-pointer group"
+      <tbody class="divide-y divide-slate-200/50 dark:divide-slate-700/50">
+        <tr
+          v-for="article in articles"
+          :key="article.id"
+          class="hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-150 cursor-pointer group"
           @click="$emit('select', article)"
         >
           <td class="px-6 py-4">
             <div class="flex items-center">
               <div class="flex-shrink-0 h-10 w-10">
-                <img v-if="article.user.profile_image" class="h-10 w-10 rounded-full object-cover border border-gray-200" :src="article.user.profile_image" alt="" />
-                <div v-else class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                <img v-if="article.user.profile_image" class="h-10 w-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-800 shadow-sm" :src="article.user.profile_image" alt="" />
+                <div v-else class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold ring-2 ring-white dark:ring-slate-800 shadow-sm">
                   {{ article.user.username.charAt(0).toUpperCase() }}
                 </div>
               </div>
               <div class="ml-4">
-                <div class="text-sm font-medium text-blue-600 group-hover:underline line-clamp-2" :title="article.title">
+                <div class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2" :title="article.title">
                   {{ article.title }}
                 </div>
-                <div class="text-sm text-gray-500">
+                <div class="text-sm text-slate-500 dark:text-slate-400">
                   by {{ article.user.name }}
                 </div>
               </div>
@@ -38,21 +38,21 @@
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
              <div class="flex gap-1 flex-wrap max-w-xs">
-                <span v-for="tag in article.tag_list" :key="tag" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                <span v-for="tag in article.tag_list" :key="tag" class="px-2 py-0.5 inline-flex text-xs leading-5 font-medium rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/20">
                   #{{ tag }}
                 </span>
              </div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right font-mono">
-            ❤️ {{ formatNumber(article.public_reactions_count) }}
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 text-right font-medium">
+            {{ formatNumber(article.public_reactions_count) }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right font-mono">
-            💬 {{ formatNumber(article.comments_count) }}
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 text-right font-medium">
+            {{ formatNumber(article.comments_count) }}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 text-right">
             {{ article.reading_time_minutes }} min
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-right">
             {{ formatDate(article.published_at) }}
           </td>
         </tr>

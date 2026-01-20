@@ -5,8 +5,10 @@
       :key="m"
       @click="select(m)"
       :class="[
-        'px-3 py-1 rounded text-sm font-medium cursor-pointer',
-        modelValue === m ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        'px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-colors',
+        modelValue === m
+          ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-sm'
+          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
       ]"
     >
       {{ m }}

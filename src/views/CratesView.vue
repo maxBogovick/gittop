@@ -4,12 +4,12 @@
       <template #actions>
           <div class="flex flex-col sm:flex-row items-center gap-4 w-full">
             <SearchBar v-model="store.query" placeholder="Search crates..." @update:model-value="store.loadCrates(false)" class="w-full sm:w-80" />
-            <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-                <select v-model="store.sort" @change="store.loadCrates(false)" class="block pl-3 pr-10 py-2 text-sm border-transparent focus:ring-0 rounded-lg transition-all">
-                    <option value="downloads">Downloads</option>
-                    <option value="recent-downloads">Recent Downloads</option>
-                    <option value="new">Newest</option>
-                    <option value="alpha">Alphabetical</option>
+            <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <select v-model="store.sort" @change="store.loadCrates(false)" class="block pl-3 pr-10 py-2 text-sm bg-transparent text-slate-900 dark:text-white border-transparent focus:ring-0 rounded-lg transition-all cursor-pointer">
+                    <option value="downloads" class="bg-white dark:bg-slate-800">Downloads</option>
+                    <option value="recent-downloads" class="bg-white dark:bg-slate-800">Recent Downloads</option>
+                    <option value="new" class="bg-white dark:bg-slate-800">Newest</option>
+                    <option value="alpha" class="bg-white dark:bg-slate-800">Alphabetical</option>
                 </select>
             </div>
           </div>
